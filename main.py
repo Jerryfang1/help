@@ -52,7 +52,7 @@ def 推算工錢(售價, 重量_錢, 金價_元_per_錢):
     return round(加工費, 2)
 
 # 處理文字訊息事件
-@handler.add(MessageEvent, message=TextMessageContent)
+@handler.add(MessageEvent, message=V3TextMessageContent)
 def handle_message(event):
     text = event.message.text.strip()
     lines = text.splitlines()
