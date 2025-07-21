@@ -56,25 +56,25 @@ def 推算工錢(售價, 重量_錢, 金價_元_per_錢):
 def handle_message(event):
     text = event.message.text.strip()
     lines = text.splitlines()
-
+    
     try:
         if not lines[0].startswith("售") or len(lines) < 3:
             raise ValueError("格式錯誤")
-
+        
         售價 = float(lines[0].replace("售", "").strip())
         重量 = float(lines[1].strip())
         金價 = float(lines[2].strip())
-
-        加工費 = 推算工錢(售價, 重量, 金價)
-
+        
+        加工費 = round(售價 - 重量 * 金價, 2)
+        
         reply_text = (
             f"🧾 計算結果：\n\n"
             f"💰 售價：{售價} 元\n"
             f"⚖️ 重量：{重量} 錢\n"
             f"📈 金價：{金價} 元/錢\n\n"
-            f"✅ 推算加工費：{加工費:.2f} 元"
+            f"✅ 推算加工費：{加工費} 元"
         )
-
+        
     except Exception:
         reply_text = "❌ 請輸入正確格式，如：\n售28000\n3.2\n7700"
 
