@@ -1,3 +1,5 @@
+.
+
 from flask import Flask, request, abort
 import os
 import json
@@ -74,21 +76,15 @@ def handle_message(event):
     金價 = 0
 
     try:
-        for line in lines:
-            line = line.strip()
-            if line.startswith("品名:"):
-                品名 = line.replace("品名:", "").strip()
-            elif line.startswith("種類:"):
-                種類 = line.replace("種類:", "").strip()
-            elif line.startswith("廠商:"):
-                廠商 = line.replace("廠商:", "").strip()
-            elif line.startswith("售"):
-                售價 = float(line.replace("售", "").strip())
-            elif 重量 == 0:
-                重量 = float(line)
-            elif 金價 == 0:
-                金價 = float(line)
+        if len(lines) < 6:
+            raise ValueError("輸入行數不足")
 
+        品名 = lines[0].strip()
+        種類 = lines[1].strip()
+        廠商 = lines[2].strip()
+        售價 = float(lines[3].strip())
+        重量 = float(lines[4].strip())
+        金價 = float(lines[5].strip())
         加工費 = round(售價 - 重量 * 金價, 2)
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
@@ -107,7 +103,7 @@ def handle_message(event):
         )
     except Exception as e:
         print("處理失敗：", e)
-        reply_text = "❌ 請輸入正確格式，例如：\n品名: 金手鍊\n種類: 9999\n廠商: 大華銀樓\n售14000\n1\n11990"
+        reply_text = "❌ 請輸入正確格式，例如：\n品名\n種類\n廠商\n14000\n1\n11990"
 
     with ApiClient(configuration) as api_client:
         line_bot_api = MessagingApi(api_client)
