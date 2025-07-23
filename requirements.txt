@@ -1,2 +1,4 @@
 flask
 line-bot-sdk==3.17.1
+gspread
+oauth2client
