@@ -66,13 +66,6 @@ def handle_message(event):
     text = event.message.text.strip()
     lines = text.splitlines()
     
-    品名 = ""
-    種類 = ""
-    廠商 = ""
-    售價 = 0
-    重量 = 0
-    金價 = 0
-
     try:
         if len(lines) < 6:
             raise ValueError("輸入行數不足")
