@@ -1,6 +1,10 @@
 from flask import Flask, request, abort
 import os
 import json
+rom datetime import datetime
+import gspread
+
+from oauth2client.service_account import ServiceAccountCredentials
 
 # LINE SDK v3
 from linebot.v3.webhook import WebhookHandler
@@ -46,10 +50,15 @@ def callback():
 
 
 # 工錢計算邏輯
-def 推算工錢(售價, 重量_錢, 金價_元_per_錢):
-    金料成本 = 重量_錢 * 金價_元_per_錢
-    加工費 = 售價 - 金料成本
-    return round(加工費, 2)
+def 寫入GoogleSheet(時間, 品名, 種類 , 廠商, 售價, 重量, 金價, 加工費):
+    scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+    credentials_dict = json.loads(os.environ["GOOGLE_CREDENTIALS_JSON"])
+    creds = ServiceAccountCredentials.from_json_keyfile_dict(credentials_dict, scope)
+    client = gspread.authorize(creds)
+    sheet_id = os.environ["GOOGLE_SHEET_ID"]
+    sheet = client.open_by_key(sheet_id).sheet1
+    row = [時間, 品名, 種類, 廠商, 售價, 重量, 金價, 加工費]
+    sheet.append_row(row)
 
 # 處理文字訊息事件
 @handler.add(MessageEvent, message=V3TextMessageContent)
@@ -57,26 +66,48 @@ def handle_message(event):
     text = event.message.text.strip()
     lines = text.splitlines()
     
+    品名 = ""
+    種類 = ""
+    廠商 = ""
+    售價 = 0
+    重量 = 0
+    金價 = 0
+
     try:
-        if not lines[0].startswith("售") or len(lines) < 3:
-            raise ValueError("格式錯誤")
-        
-        售價 = float(lines[0].replace("售", "").strip())
-        重量 = float(lines[1].strip())
-        金價 = float(lines[2].strip())
-        
+        for line in lines:
+            line = line.strip()
+            if line.startswith("品名:"):
+                品名 = line.replace("品名:", "").strip()
+            elif line.startswith("種類:"):
+                種類 = line.replace("種類:", "").strip()
+            elif line.startswith("廠商:"):
+                廠商 = line.replace("廠商:", "").strip()
+            elif line.startswith("售"):
+                售價 = float(line.replace("售", "").strip())
+            elif 重量 == 0:
+                重量 = float(line)
+            elif 金價 == 0:
+                金價 = float(line)
+
         加工費 = round(售價 - 重量 * 金價, 2)
-        
+        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+        寫入GoogleSheet(now, 品名, 種類, 廠商, 售價, 重量, 金價, 加工費)
+
         reply_text = (
-            f"🧾 計算結果：\n\n"
-            f"💰 售價：{售價} 元\n"
+            f"✅ 已寫入報表：\n\n"
+            f"🕒 時間：{now}\n"
+            f"📦 品名：{品名}\n"
+            f"🔢 種類：{種類}\n"
+            f"🏪 廠商：{廠商}\n"
+            f"💰 售價：{售價}\n"
             f"⚖️ 重量：{重量} 錢\n"
-            f"📈 金價：{金價} 元/錢\n\n"
-            f"✅ 推算加工費：{加工費} 元"
+            f"📈 金價：{金價} 元/錢\n"
+            f"🔧 加工費：{加工費:.2f} 元"
         )
-        
-    except Exception:
-        reply_text = "❌ 請輸入正確格式，如：\n售28000\n3.2\n7700"
+    except Exception as e:
+        print("處理失敗：", e)
+        reply_text = "❌ 請輸入正確格式，例如：\n品名: 金手鍊\n種類: 9999\n廠商: 大華銀樓\n售14000\n1\n11990"
 
     with ApiClient(configuration) as api_client:
         line_bot_api = MessagingApi(api_client)
