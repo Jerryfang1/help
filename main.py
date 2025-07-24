@@ -64,18 +64,20 @@ def 寫入GoogleSheet(時間, 品名, 種類 , 廠商, 售價, 重量, 金價, �
 @handler.add(MessageEvent, message=V3TextMessageContent)
 def handle_message(event):
     text = event.message.text.strip()
-    lines = text.splitlines()
+    lines = [line.strip() for line in text.splitlines() if line.strip()]  # 去除空行與多餘空白
+    
+    print("解析後的輸入行：", lines)
     
     try:
-        if len(lines) < 6:
-            raise ValueError("輸入行數不足")
+        if len(lines) != 6:
+            raise ValueError(f"❌ 輸入格式應為 6 行，目前為 {len(lines)} 行")
 
-        品名 = lines[0].strip()
-        種類 = lines[1].strip()
-        廠商 = lines[2].strip()
-        售價 = float(lines[3].strip())
-        重量 = float(lines[4].strip())
-        金價 = float(lines[5].strip())
+        品名 = lines[0]
+        種類 = lines[1]
+        廠商 = lines[2]
+        售價 = float(lines[3].replace(',', ''))
+        重量 = float(lines[4].replace(',', ''))
+        金價 = float(lines[5].replace(',', ''))
         加工費 = round(售價 - 重量 * 金價, 2)
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
