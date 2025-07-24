@@ -66,11 +66,12 @@ def handle_message(event):
     text = event.message.text.strip()
     lines = [line.strip() for line in text.splitlines() if line.strip()]  # 去除空行與多餘空白
     
-    print("解析後的輸入行：", lines)
+    print("解析後行數：", len(lines))
+    print("內容：", lines)
     
     try:
         if len(lines) != 6:
-            raise ValueError(f"❌ 輸入格式應為 6 行，目前為 {len(lines)} 行")
+            raise ValueError(f"❌ 輸入格式應為 6 行，目前為 {len(lines)} 行，內容：{lines}")
 
         品名 = lines[0]
         種類 = lines[1]
