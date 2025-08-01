@@ -50,7 +50,7 @@ def callback():
 
 
 # 工錢計算邏輯
-def 寫入GoogleSheet(時間, 代墊人, 代墊單位, 廠商, 商品):
+def 寫入GoogleSheet(時間, 代墊人, 代墊單位, 廠商, 商品, ""):
     scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
     credentials_dict = json.loads(os.environ["GOOGLE_CREDENTIALS_JSON"])
     creds = ServiceAccountCredentials.from_json_keyfile_dict(credentials_dict, scope)
