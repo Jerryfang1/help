@@ -3,6 +3,7 @@ import os
 import json
 from datetime import datetime
 import gspread
+import re
 
 from oauth2client.service_account import ServiceAccountCredentials
 
@@ -57,7 +58,7 @@ def 寫入GoogleSheet(時間, 代墊人, 代墊單位, 廠商, 商品):
     client = gspread.authorize(creds)
     sheet_id = os.environ["GOOGLE_SHEET_ID"]
     sheet = client.open_by_key(sheet_id).sheet1
-    row = [時間, 代墊人, 代墊單位, 廠商, 商品]
+    row = [時間, 代墊人, 代墊單位, 商品, f"NT${int(價錢)}", ""]
     sheet.append_row(row)
 
 # 處理文字訊息事件
@@ -73,7 +74,8 @@ def handle_message(event):
         代墊人 = lines[0].replace("墊", "").strip()
         代墊單位 = lines[1].strip()
         商品 = lines[2].strip()
-        價錢 = float(lines[3].replace(",", ""))
+        純數字 = re.sub(r"[^\d.]", "", lines[3])  # 移除 NT$ 或非數字符號
+        價錢 = float(純數字)
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         寫入GoogleSheet(now, 代墊人, 代墊單位, 商品, 價錢)
