@@ -50,14 +50,14 @@ def callback():
 
 
 # 工錢計算邏輯
-def 寫入GoogleSheet(時間, 代墊人, 代墊單位, 廠商, 商品):
+def 寫入GoogleSheet(時間, 代墊人, 代墊單位, 商品, 價錢):
     scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
     credentials_dict = json.loads(os.environ["GOOGLE_CREDENTIALS_JSON"])
     creds = ServiceAccountCredentials.from_json_keyfile_dict(credentials_dict, scope)
     client = gspread.authorize(creds)
     sheet_id = os.environ["GOOGLE_SHEET_ID"]
     sheet = client.open_by_key(sheet_id).sheet1
-    row = [時間, 代墊人, 代墊單位, 廠商, 商品, ""]
+    row = [時間, 代墊人, 代墊單位, 商品, 價錢, ""]
     sheet.append_row(row)
 
 # 處理文字訊息事件
