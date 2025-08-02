@@ -56,9 +56,10 @@ def 寫入GoogleSheet(時間, 代墊人, 代墊單位, 商品, 價錢):
     creds = ServiceAccountCredentials.from_json_keyfile_dict(credentials_dict, scope)
     client = gspread.authorize(creds)
     sheet_id = os.environ["GOOGLE_SHEET_ID"]
-    sheet = client.open_by_key(sheet_id).sheet1
-    row = [時間, 代墊人, 代墊單位, 商品, 價錢, ""]
-    sheet.append_row(row)
+    sheet = client.open_by_key(sheet_id).worksheet("代墊")
+    row = [時間, 代墊人, 代墊單位, 商品, f"NT${int(價錢)}", ""]
+    sheet.append_row(row, value_input_option="USER_ENTERED")
+    print("[DEBUG] 已成功寫入 Google Sheet")
 
 # 處理文字訊息事件
 @handler.add(MessageEvent, message=V3TextMessageContent)
